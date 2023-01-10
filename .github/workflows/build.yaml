@@ -1,4 +1,5 @@
 ---
+---
 name: Build kindle note website
 
 on:
@@ -18,7 +19,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.10.9
+          python-version: 3.10
 
       - name: Set Variables
         id: set_variables
@@ -49,4 +50,3 @@ jobs:
           git add books
           git commit -am "Auto build by GitHub Actions $(date)"
           git push origin -f
-
