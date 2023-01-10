@@ -13,27 +13,26 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v2
+              uses: actions/checkout@v3
 
             - name: Set up Python
-              uses: actions/setup-python@v1
+              uses: actions/setup-python@v4
               with:
-                  python-version: 3.10.9
+                  python-version: '3.10'
 
-            - name: Set Variables
-              id: set_variables
-              run: |
-                  echo "::set-output name=PY::$(python -c 'import hashlib, sys;print(hashlib.sha256(sys.version.encode()+sys.executable.encode()).hexdigest())')"
-                  echo "::set-output name=PIP_CACHE::$(pip cache dir)"
             - name: Cache PIP
-              uses: actions/cache@v2
+              uses: actions/cache@v3
               with:
-                  path: ${{ steps.set_variables.outputs.PIP_CACHE }}
-                  key: Ubuntu-pip-${{ steps.set_variables.outputs.PY }}
+                  path: ~/.cache/pip
+                  key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+                  restore-keys: |
+                      ${{ runner.os }}-pip-
+
             - name: Install dependencies
               run: |
                   pip3 install -U github_poster
               if: steps.pip-cache.outputs.cache-hit != 'true'
+
             - name: Build .html file
               run: python3 kindle.py
 
@@ -41,10 +40,16 @@ jobs:
               run: |
                   github_poster json --json_file date.json --year 2022 --me kindleReading
                   mv OUT_FOLDER/json.svg date.svg
-            - name: Config git user and user.email and push commit
+
+            - name: Config git user and user.email
               run: |
                   git config user.name github-actions
                   git config user.email 41898282+github-actions[bot]@users.noreply.github.com
                   git add books
                   git commit -am "Auto build by GitHub Actions $(date)"
-                  git push origin -f
+
+            - name: Push changes
+              uses: ad-m/github-push-action@master
+              with:
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
+                  branch: ${{ github.ref }}
