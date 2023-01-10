@@ -13,20 +13,20 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v2
+              uses: actions/checkout@v3
 
             - name: Set up Python
-              uses: actions/setup-python@v1
+              uses: actions/setup-python@v2
               with:
                   python-version: 3.10.9
 
             - name: Set Variables
               id: set_variables
               run: |
-                  echo "::set-output name=PY::$(python -c 'import hashlib, sys;print(hashlib.sha256(sys.version.encode()+sys.executable.encode()).hexdigest())')"
-                  echo "::set-output name=PIP_CACHE::$(pip cache dir)"
+                  echo "name=PY::$(python -c 'import hashlib, sys;print(hashlib.sha256(sys.version.encode()+sys.executable.encode()).hexdigest())')">> $GITHUB_OUTPUT
+                  echo "name=PIP_CACHE::$(pip cache dir)">> $GITHUB_OUTPUT
             - name: Cache PIP
-              uses: actions/cache@v2
+              uses: actions/cache@v3
               with:
                   path: ${{ steps.set_variables.outputs.PIP_CACHE }}
                   key: Ubuntu-pip-${{ steps.set_variables.outputs.PY }}
